@@ -1,0 +1,3 @@
+[submodule "dxmath_c"]
+	path = dxmath_c
+	url = https://github.com/AlaskanEmily/DirectXMathC

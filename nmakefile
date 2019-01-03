@@ -1,0 +1,5 @@
+# Any copyright is dedicated to the Public Domain.
+# http://creativecommons.org/publicdomain/zero/1.0/
+
+all:
+	mercury --make dx_vector_test -O6 --c-include-directory dxmath_c --cflag /DDXMATH_SSE3_INTRINSICS --cflag /arch:SSE2
