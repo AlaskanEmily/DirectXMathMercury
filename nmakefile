@@ -1,5 +1,10 @@
 # Any copyright is dedicated to the Public Domain.
 # http://creativecommons.org/publicdomain/zero/1.0/
 
+OPT= -O6 --intermodule-optimization --grade=none.gc --procs-per-c-function 16 --optimize-reassign --optimize-repeat 16 --no-use-local-vars
+
+MMCFLAGS=--c-include-directory dxmath_c --cflag /Fa --cflag /DDXMATH_SSE3_INTRINSICS --cflag /arch:SSE2 --cflag /O2
+
 all:
-	mercury --make dx_vector_test -O6 --c-include-directory dxmath_c --cflag /DDXMATH_SSE3_INTRINSICS --cflag /arch:SSE2
+	mercury --make dx_vector_test $(OPT) $(MMCFLAGS)
+	mercury --make libdx_matrix $(OPT) $(MMCFLAGS)
