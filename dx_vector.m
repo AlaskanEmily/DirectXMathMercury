@@ -58,6 +58,18 @@
 :- mode (in) + (di) = (uo) is det.
 :- mode (di) + (di) = (uo) is det.
 
+:- func plus(vector, vector) = (vector).
+:- mode plus(in, in) = (uo) is det.
+:- mode plus(di, in) = (uo) is det.
+:- mode plus(in, di) = (uo) is det.
+:- mode plus(di, di) = (uo) is det.
+
+:- pred plus(vector, vector, vector).
+:- mode plus(in, in, uo) is det.
+:- mode plus(di, in, uo) is det.
+:- mode plus(in, di, uo) is det.
+:- mode plus(di, di, uo) is det.
+
 %-----------------------------------------------------------------------------%
 
 :- func (vector) - (vector) = (vector).
@@ -65,6 +77,18 @@
 :- mode (di) - (in) = (uo) is det.
 :- mode (in) - (di) = (uo) is det.
 :- mode (di) - (di) = (uo) is det.
+
+:- func minus(vector, vector) = (vector).
+:- mode minus(in, in) = (uo) is det.
+:- mode minus(di, in) = (uo) is det.
+:- mode minus(in, di) = (uo) is det.
+:- mode minus(di, di) = (uo) is det.
+
+:- pred minus(vector, vector, vector).
+:- mode minus(in, in, uo) is det.
+:- mode minus(di, in, uo) is det.
+:- mode minus(in, di, uo) is det.
+:- mode minus(di, di, uo) is det.
 
 %-----------------------------------------------------------------------------%
 
@@ -74,6 +98,18 @@
 :- mode (in) * (di) = (uo) is det.
 :- mode (di) * (di) = (uo) is det.
 
+:- func times(vector, vector) = (vector).
+:- mode times(in, in) = (uo) is det.
+:- mode times(di, in) = (uo) is det.
+:- mode times(in, di) = (uo) is det.
+:- mode times(di, di) = (uo) is det.
+
+:- pred times(vector, vector, vector).
+:- mode times(in, in, uo) is det.
+:- mode times(di, in, uo) is det.
+:- mode times(in, di, uo) is det.
+:- mode times(di, di, uo) is det.
+
 %-----------------------------------------------------------------------------%
 
 :- func (vector) / (vector) = (vector).
@@ -82,11 +118,40 @@
 :- mode (in) / (di) = (uo) is det.
 :- mode (di) / (di) = (uo) is det.
 
+:- func div(vector, vector) = (vector).
+:- mode div(in, in) = (uo) is det.
+:- mode div(di, in) = (uo) is det.
+:- mode div(in, di) = (uo) is det.
+:- mode div(di, di) = (uo) is det.
+
+:- pred div(vector, vector, vector).
+:- mode div(in, in, uo) is det.
+:- mode div(di, in, uo) is det.
+:- mode div(in, di, uo) is det.
+:- mode div(di, di, uo) is det.
+
+%-----------------------------------------------------------------------------%
+% Unary plus.
+:- func +(vector) = (vector).
+:- mode +(di) = (uo) is det.
+:- mode +(in) = (out) is det.
+:- mode +(mdi) = (muo) is det.
+
 %-----------------------------------------------------------------------------%
 
 :- func -(vector) = (vector).
 :- mode -(di) = (uo) is det.
 :- mode -(in) = (uo) is det.
+
+:- func negate(vector) = (vector).
+:- mode negate(di) = (uo) is det.
+:- mode negate(in) = (uo) is det.
+
+:- pred negate(vector, vector).
+:- mode negate(di, uo) is det.
+:- mode negate(in, uo) is det.
+:- mode negate(uo, in) is det.
+:- mode negate(uo, di) is det.
 
 %-----------------------------------------------------------------------------%
 
@@ -94,15 +159,128 @@
 :- mode scale(in, in) = (uo) is det.
 :- mode scale(di, in) = (uo) is det.
 
+:- pred scale(vector, float, vector).
+:- mode scale(in, in, uo) is det.
+:- mode scale(di, in, uo) is det.
+
+%-----------------------------------------------------------------------------%
+
+:- func length(vector::in) = (float::uo) is det.
+:- pred length(vector::in, float::uo) is det.
+
+%-----------------------------------------------------------------------------%
+
+:- func length_squared(vector::in) = (float::uo) is det.
+:- pred length_squared(vector::in, float::uo) is det.
+
+%-----------------------------------------------------------------------------%
+
+:- func normalize(vector) = vector.
+:- mode normalize(in) = (uo) is det.
+:- mode normalize(di) = (uo) is det.
+
+:- pred normalize(vector, vector).
+:- mode normalize(in, uo) is det.
+:- mode normalize(di, uo) is det.
+
 %-----------------------------------------------------------------------------%
 
 :- func dot(vector::in, vector::in) = (float::uo) is det.
+:- pred dot(vector::in, vector::in, float::uo) is det.
 
 %=============================================================================%
 :- implementation.
 %=============================================================================%
 
+% Never learn how the sausage is made.
+
 :- import_module float.
+:- use_module math.
+
+% We try to force inlining as much as possible. This allows many equations to
+% actually compile down from Mercury all the way to ASM which is pretty close
+% to what the C version would have been (sans some extra allocations ;_; )
+:- pragma inline(vector/4).
+:- pragma inline(('+')/2).
+:- pragma inline(plus/3).
+:- pragma inline(plus/2).
+:- pragma inline(('-')/2).
+:- pragma inline(minus/3).
+:- pragma inline(minus/2).
+:- pragma inline(('*')/2).
+:- pragma inline(times/3).
+:- pragma inline(times/2).
+:- pragma inline(('/')/2).
+:- pragma inline(div/3).
+:- pragma inline(div/2).
+:- pragma inline(('-')/1).
+:- pragma inline(('+')/1).
+:- pragma inline(scale/2).
+:- pragma inline(scale/3).
+:- pragma inline(length/2).
+:- pragma inline(length_squared/1).
+:- pragma inline(length_squared/2).
+:- pragma inline(normalize/1).
+:- pragma inline(normalize/2).
+:- pragma inline(dot/2).
+:- pragma inline(dot/3).
+
+%=============================================================================%
+% Pred and func versions of operators come first, as these are shared between
+% both the C backend and the Mercury backend.
+%=============================================================================%
+
+plus(A, B, A+B).
+plus(A, B) = A+B.
+
+%-----------------------------------------------------------------------------%
+
+minus(A, B, A-B).
+minus(A, B) = A-B.
+
+%-----------------------------------------------------------------------------%
+
+times(A, B, A*B).
+times(A, B) = (A*B).
+
+%-----------------------------------------------------------------------------%
+
+div(A, B, A/B).
+div(A, B) = (A/B).
+
+%-----------------------------------------------------------------------------%
+
++(A) = (A).
+
+%-----------------------------------------------------------------------------%
+
+negate(A) = (-A).
+
+negate(A::in, B::uo) :- B = -A.
+negate(A::di, B::uo) :- B = -A.
+negate(A::uo, B::in) :- A = -B.
+negate(A::uo, B::di) :- A = -B.
+:- pragma promise_pure(negate/2).
+
+%-----------------------------------------------------------------------------%
+
+normalize(A, normalize(A)).
+
+%-----------------------------------------------------------------------------%
+
+dot(A, B, dot(A, B)).
+
+%-----------------------------------------------------------------------------%
+
+length(A, length(A)).
+
+%-----------------------------------------------------------------------------%
+
+scale(A, F, scale(A, F)).
+
+%-----------------------------------------------------------------------------%
+
+length_squared(A, length_squared(A)).
 
 %=============================================================================%
 % Mercury implementation. This is used for all backends except C.
@@ -158,54 +336,24 @@ scale(vector(X, Y, Z, W), T) = vector(X*T, Y*T, Z*T, W*T).
 
 %-----------------------------------------------------------------------------%
 
-dot(vector(X1, Y1, Z1, W1), vector(X2, Y2, Z2, W2)) = (X1*X2) + (Y1*Y2) + (Z1*Z2) + (W1*W2).
+length(A) = math.unchecked_sqrt(length_squared(A)).
+length_squared(A) = dot(A, A).
+
+%-----------------------------------------------------------------------------%
+
+normalize(V) = scale(V, 1.0/length(V)).
+
+%-----------------------------------------------------------------------------%
+
+dot(vector(X1, Y1, Z1, W1), vector(X2, Y2, Z2, W2)) =
+    (X1*X2) + (Y1*Y2) + (Z1*Z2) + (W1*W2).
 
 %=============================================================================%
 % DirectXMath implementation, used in C backends.
 %=============================================================================%
 
-:- pragma foreign_decl("C", "#include ""dxmath.h"" ").
-:- pragma foreign_decl("C", " struct MerDX_VECTOR4_wrapper; ").
+:- pragma foreign_decl("C", " #include ""dx_math_mercury.h"" ").
 :- pragma foreign_type("C", vector, "struct MerDX_VECTOR4_wrapper*").
-
-:- pragma foreign_decl("C", 
-    "
-#define MerDX_AllocateVector4() \\
-    ((struct MerDX_VECTOR4_wrapper*)MR_GC_malloc_atomic(sizeof(DXMATH_VECTOR4) + 15))
-    
-typedef DXMATH_VECTOR4* MerDX_DXMATH_VECTOR4_PTR;
-    MerDX_DXMATH_VECTOR4_PTR DXMATH_CONSTEXPR DXMATH_CALL
-    MerDX_Vector4Offset(struct MerDX_VECTOR4_wrapper *w){
-        MR_Word data = (MR_Word)w;
-        if((data & 0xF) == 0) return (DXMATH_VECTOR4*)w;
-        data = (data-1) & (~((MR_Word)0xF));
-        data += 0x10;
-        return (DXMATH_VECTOR4*)data;
-    }
-
-typedef struct MerDX_VECTOR4_wrapper* MerDX_VECTOR4_PTR;
-    MerDX_VECTOR4_PTR DXMATH_CONSTEXPR DXMATH_CALL
-    MerDX_CreateVector4Assign(DXMATH_VECTOR4 V){
-        struct MerDX_VECTOR4_wrapper *const wrapper = MerDX_AllocateVector4();
-        *MerDX_Vector4Offset(wrapper) = V;
-        return wrapper;
-    }
-    
-#define MerDX_CreateVector4(FX, FY, FZ, FW) \\
-    MerDX_CreateVector4Assign(DXMATH_Vector4Set(FX, FY, FZ, FW))
-    
-#define MerDX_Vector4Unwrap(VEC_WRAP) \\
-    (*MerDX_Vector4Offset((VEC_WRAP)))
-
-#define MerDX_DESTRUCTIVE_BINOP(MERDX_OP, MERDX_OVERWRITE, MERDX_V1, MERDX_V2) \\
-    (MERDX_OVERWRITE); \\
-    do{ \\
-    const DXMATH_VECTOR4 MerDX_DESTRUCTIVE_BINOP_vec = \\
-        MERDX_OP(MerDX_Vector4Unwrap(MERDX_V1), MerDX_Vector4Unwrap(MERDX_V2)); \\
-    MerDX_Vector4Unwrap(Out) = MerDX_DESTRUCTIVE_BINOP_vec; \\
-    } while(0)
-
-    ").
 
 %-----------------------------------------------------------------------------%
 
@@ -431,7 +579,7 @@ typedef struct MerDX_VECTOR4_wrapper* MerDX_VECTOR4_PTR;
      will_not_modify_trail, does_not_affect_liveness, may_duplicate],
     "
     const float F = MerF;
-    const DXMATH_VECTOR4 vec = DXMATH_Vector4Multiply(DXMATH_Vector4Set(F, F, F, F), MerDX_Vector4Unwrap(V));
+    const DXMATH_VECTOR4 vec = DXMATH_Vector4Scale(MerDX_Vector4Unwrap(V), F);
     Out = MerDX_CreateVector4Assign(vec);
     ").
 
@@ -443,11 +591,34 @@ typedef struct MerDX_VECTOR4_wrapper* MerDX_VECTOR4_PTR;
     "
     const float F = MerF;
     Out = V;
-    const DXMATH_VECTOR4 vec = DXMATH_Vector4Multiply(DXMATH_Vector4Set(F, F, F, F), MerDX_Vector4Unwrap(V));
+    const DXMATH_VECTOR4 vec = DXMATH_Vector4Scale(MerDX_Vector4Unwrap(V), F);
     MerDX_Vector4Unwrap(Out) = vec;
     ").
 
 :- pragma promise_pure(scale/2).
+
+%-----------------------------------------------------------------------------%
+
+:- pragma foreign_proc("C", normalize(V::in) = (Out::uo),
+    [will_not_call_mercury, will_not_throw_exception, promise_pure, thread_safe,
+     will_not_modify_trail, does_not_affect_liveness, may_duplicate],
+    "
+    const DXMATH_VECTOR4 vec = DXMATH_Vector4Normalize(MerDX_Vector4Unwrap(V));
+    Out = MerDX_CreateVector4Assign(vec);
+    ").
+
+%-----------------------------------------------------------------------------%
+
+:- pragma foreign_proc("C", normalize(V::di) = (Out::uo),
+    [will_not_call_mercury, will_not_throw_exception, promise_pure, thread_safe,
+     will_not_modify_trail, does_not_affect_liveness, may_duplicate],
+    "
+    Out = V;
+    const DXMATH_VECTOR4 vec = DXMATH_Vector4Normalize(MerDX_Vector4Unwrap(V));
+    MerDX_Vector4Unwrap(Out) = vec;
+    ").
+
+:- pragma promise_pure(normalize/1).
 
 %-----------------------------------------------------------------------------%
 
@@ -457,3 +628,18 @@ typedef struct MerDX_VECTOR4_wrapper* MerDX_VECTOR4_PTR;
     " 
     Out = DXMATH_Vector4Dot(MerDX_Vector4Unwrap(V1), MerDX_Vector4Unwrap(V2));
     ").
+
+%-----------------------------------------------------------------------------%
+
+:- pragma foreign_proc("C", length(V::in) = (Out::uo),
+    [will_not_call_mercury, will_not_throw_exception, promise_pure, thread_safe,
+     will_not_modify_trail, does_not_affect_liveness, may_duplicate],
+    " Out = DXMATH_Vector4Length(MerDX_Vector4Unwrap(V)); ").
+
+%-----------------------------------------------------------------------------%
+
+:- pragma foreign_proc("C", length_squared(V::in) = (Out::uo),
+    [will_not_call_mercury, will_not_throw_exception, promise_pure, thread_safe,
+     will_not_modify_trail, does_not_affect_liveness, may_duplicate],
+    " Out = DXMATH_Vector4LengthSq(MerDX_Vector4Unwrap(V)); ").
+
